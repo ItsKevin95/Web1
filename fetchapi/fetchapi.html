@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Fetch API CRUD</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Web programozás-1 Előadás Házi feladat</h1>
+    <p>Mozi adatbázis webalkalmazás</p>
+</header>
+
+<nav>
+    <a href="../index.html">Főoldal</a>
+    <a href="../javascript/javascript.html">JavaScript</a>
+    <a href="../react/react.html">React</a>
+    <a href="../spa/spa.html">SPA</a>
+    <a href="fetchapi.html">Fetch API</a>
+    <a href="../axios/axios.html">Axios</a>
+    <a href="../oojs/oojs.html">OO JavaScript</a>
+</nav>
+
+<main>
+    <h2>Fetch API CRUD</h2>
+
+    <div class="form">
+        <input id="cim" placeholder="Cím">
+        <input id="ev" placeholder="Év">
+        <input id="hossz" placeholder="Hossz">
+        <button onclick="addFilm()">Hozzáadás</button>
+    </div>
+
+    <table id="table"></table>
+</main>
+
+<footer>
+    <p>Készítette:</p>
+    <p>Kovács Kevin Izsák - LXK94M</p>
+    <p>Jantyik Róbert - H8O0EL</p>
+</footer>
+
+<script>
+
+const API = "../backend/api.php";
+
+async function load() {
+    const res = await fetch(API);
+    const data = await res.json();
+    render(data);
+}
+
+function render(data) {
+    const table = document.getElementById("table");
+
+    table.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>Cím</th>
+            <th>Év</th>
+            <th>Hossz</th>
+            <th>Művelet</th>
+        </tr>
+    `;
+
+    data.forEach(f => {
+        table.innerHTML += `
+            <tr>
+                <td>${f.id}</td>
+
+                <td contenteditable onblur="update(${f.id}, 'cim', this.innerText)">
+                    ${f.cim}
+                </td>
+
+                <td contenteditable onblur="update(${f.id}, 'ev', this.innerText)">
+                    ${f.ev}
+                </td>
+
+                <td contenteditable onblur="update(${f.id}, 'hossz', this.innerText)">
+                    ${f.hossz}
+                </td>
+
+                <td>
+                    <button onclick="del(${f.id})">Törlés</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function addFilm() {
+    await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            cim: cim.value,
+            ev: ev.value,
+            hossz: hossz.value
+        })
+    });
+
+    cim.value = "";
+    ev.value = "";
+    hossz.value = "";
+
+    load();
+}
+
+async function update(id, field, value) {
+    const res = await fetch(API);
+    const data = await res.json();
+    const film = data.find(f => f.id == id);
+
+    film[field] = value;
+
+    await fetch(API, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(film)
+    });
+}
+
+async function del(id) {
+    await fetch(API + "?id=" + id, {
+        method: "DELETE"
+    });
+
+    load();
+}
+
+load();
+
+</script>
+
+</body>
+</html>
