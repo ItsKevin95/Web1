@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>React CRUD</title>
+    <link rel="stylesheet" href="../style.css">
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+
+<header>
+    <h1>Web programozás-1 Előadás Házi feladat</h1>
+    <p>Mozi adatbázis webalkalmazás</p>
+</header>
+
+<nav>
+    <a href="../index.html">Főoldal</a>
+    <a href="../javascript/javascript.html">JavaScript</a>
+    <a href="react.html">React</a>
+    <a href="../spa/spa.html">SPA</a>
+    <a href="../fetchapi/fetchapi.html">Fetch API</a>
+    <a href="../axios/axios.html">Axios</a>
+    <a href="../oojs/oojs.html">OO JavaScript</a>
+</nav>
+
+<main>
+    <h2>React CRUD (TXT adatból)</h2>
+
+    <div id="root"></div>
+</main>
+
+<footer>
+    <p>Készítette:</p>
+    <p>Kovács Kevin Izsák - LXK94M</p>
+    <p>Jantyik Róbert - H8O0EL</p>
+</footer>
+
+<script type="text/babel">
+
+    function App() {
+        const [films, setFilms] = React.useState([]);
+        const [form, setForm] = React.useState({cim: "", ev: "", hossz: ""});
+
+        React.useEffect(() => {
+            loadFilms();
+        }, []);
+
+        async function loadFilms() {
+            const res = await fetch('../data/film.txt');
+            const text = await res.text();
+
+            const lines = text.trim().split('\n');
+
+            const data = lines.slice(1).map(line => {
+                const v = line.split('\t');
+                return {
+                    id: v[0],
+                    cim: v[1],
+                    ev: v[2],
+                    hossz: v[3]
+                };
+            });
+
+            setFilms(data);
+        }
+
+        function addFilm() {
+            const newId = films.length
+                ? Math.max(...films.map(f => +f.id)) + 1
+                : 1;
+
+            setFilms([
+                ...films,
+                {id: newId, ...form}
+            ]);
+
+            setForm({cim: "", ev: "", hossz: ""});
+        }
+
+        function updateFilm(index, field, value) {
+            const copy = [...films];
+            copy[index][field] = value;
+            setFilms(copy);
+        }
+
+        function deleteFilm(index) {
+            const copy = films.filter((_, i) => i !== index);
+            setFilms(copy);
+        }
+
+        return (
+            <div>
+                <div className="form">
+                    <input
+                        placeholder="Cím"
+                        value={form.cim}
+                        onChange={e => setForm({...form, cim: e.target.value})}
+                    />
+                    <input
+                        placeholder="Év"
+                        value={form.ev}
+                        onChange={e => setForm({...form, ev: e.target.value})}
+                    />
+                    <input
+                        placeholder="Hossz"
+                        value={form.hossz}
+                        onChange={e => setForm({...form, hossz: e.target.value})}
+                    />
+                    <button onClick={addFilm}>Hozzáadás</button>
+                </div>
+
+                <table style={{borderCollapse: "collapse", marginTop: "10px", width: "100%"}}>
+                    <thead>
+                    <tr>
+                        <th style={{padding: "8px", borderBottom: "2px solid black"}}>ID</th>
+                        <th style={{padding: "8px", borderBottom: "2px solid black"}}>Cím</th>
+                        <th style={{padding: "8px", borderBottom: "2px solid black"}}>Év</th>
+                        <th style={{padding: "8px", borderBottom: "2px solid black"}}>Hossz</th>
+                        <th style={{padding: "8px", borderBottom: "2px solid black"}}>Művelet</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {films.map((f, i) => (
+                        <tr key={f.id} style={{borderBottom: "1px solid #ddd"}}>
+                            <td style={{padding: "6px"}}>{f.id}</td>
+
+                            <td
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={e => updateFilm(i, "cim", e.target.innerText)}
+                                style={{padding: "6px"}}
+                            >
+                                {f.cim}
+                            </td>
+
+                            <td
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={e => updateFilm(i, "ev", e.target.innerText)}
+                                style={{padding: "6px"}}
+                            >
+                                {f.ev}
+                            </td>
+
+                            <td
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={e => updateFilm(i, "hossz", e.target.innerText)}
+                                style={{padding: "6px"}}
+                            >
+                                {f.hossz}
+                            </td>
+
+                            <td style={{padding: "6px"}}>
+                                <button onClick={() => deleteFilm(i)}>
+                                    Törlés
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+</script>
+
+</body>
+</html>
