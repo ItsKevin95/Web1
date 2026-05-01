@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>SPA</title>
+    <link rel="stylesheet" href="../style.css">
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .menu button {
+            margin-right: 10px;
+            padding: 8px;
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Web programozás-1 Előadás Házi feladat</h1>
+    <p>Mozi adatbázis webalkalmazás</p>
+</header>
+
+<nav>
+    <a href="../index.html">Főoldal</a>
+    <a href="../javascript/javascript.html">JavaScript</a>
+    <a href="../react/react.html">React</a>
+    <a href="spa.html">SPA</a>
+    <a href="../fetchapi/fetchapi.html">Fetch API</a>
+    <a href="../axios/axios.html">Axios</a>
+    <a href="../oojs/oojs.html">OO JavaScript</a>
+</nav>
+
+<main>
+    <h2>SPA (2 React alkalmazás)</h2>
+    <div id="root"></div>
+</main>
+
+<footer>
+    <p>Készítette:</p>
+    <p>Kovács Kevin Izsák - LXK94M</p>
+    <p>Jantyik Róbert - H8O0EL</p>
+</footer>
+
+<script type="text/babel">
+
+function RatingApp() {
+    const [ratings, setRatings] = React.useState([]);
+
+    function addRating() {
+        setRatings([...ratings, 5]);
+    }
+
+    function updateRating(index, value) {
+        const copy = [...ratings];
+        copy[index] = value;
+        setRatings(copy);
+    }
+
+    const avg = ratings.length
+        ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2)
+        : 0;
+
+    return (
+        <div className="card">
+            <h3>Film értékelő rendszer</h3>
+
+            <button onClick={addRating}>Új értékelés hozzáadása</button>
+
+            {ratings.map((r, i) => (
+                <div key={i}>
+                    <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={r}
+                        onChange={(e) =>
+                            updateRating(i, parseInt(e.target.value))
+                        }
+                    />
+                    <span> {r}/10</span>
+                </div>
+            ))}
+
+            <p><b>Átlag értékelés:</b> {avg}</p>
+        </div>
+    );
+}
+
+function TicTacToe() {
+    const [board, setBoard] = React.useState(Array(9).fill(null));
+    const [xIsNext, setXIsNext] = React.useState(true);
+    const [winner, setWinner] = React.useState(null);
+
+    const lines = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ];
+
+    function checkWinner(b) {
+        for (let [a,b1,c] of lines) {
+            if (b[a] && b[a] === b[b1] && b[a] === b[c]) {
+                return b[a];
+            }
+        }
+        return null;
+    }
+
+    function handleClick(i) {
+        if (board[i] || winner) return;
+
+        const newBoard = [...board];
+        newBoard[i] = xIsNext ? "X" : "O";
+
+        const win = checkWinner(newBoard);
+
+        setBoard(newBoard);
+        setXIsNext(!xIsNext);
+        setWinner(win);
+    }
+
+    function reset() {
+        setBoard(Array(9).fill(null));
+        setXIsNext(true);
+        setWinner(null);
+    }
+
+    return (
+        <div className="card">
+            <h3>Amőba</h3>
+
+            <p>
+                {winner
+                    ? `Győztes: ${winner}`
+                    : `Következő: ${xIsNext ? "X" : "O"}`}
+            </p>
+
+            <div className="grid">
+                {board.map((v, i) => (
+                    <button
+                        key={i}
+                        className="cell"
+                        onClick={() => handleClick(i)}
+                    >
+                        {v}
+                    </button>
+                ))}
+            </div>
+
+            <button onClick={reset}>Új játék</button>
+        </div>
+    );
+}
+
+function App() {
+    const [view, setView] = React.useState("rating");
+
+    return (
+        <div>
+            <div className="menu">
+                <button onClick={() => setView("rating")}>
+                    Film értékelő
+                </button>
+                <button onClick={() => setView("tictactoe")}>
+                    Amőba
+                </button>
+            </div>
+
+            {view === "rating" && <RatingApp />}
+            {view === "tictactoe" && <TicTacToe />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+
+</body>
+</html>
